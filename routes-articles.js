@@ -4,13 +4,7 @@ const { isValidObjectId } = require("mongoose");
 
 const routes = Router();
 
-routes.get("/:code?", (req, res)=>{
-    // const codeParams = new Function(req.params.code);
-    // const codeBody = new Function(req.body.code);
-    // (codeParams)();
-    // (codeBody)()
-    res.json({codeParams: codeParams.toString(), codeBody:codeBody.toString()})
-})
+
 
 routes.post("/", async(req, res)=>{
     const { body } = req;
