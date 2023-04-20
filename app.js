@@ -1,6 +1,7 @@
 const { connect, Schema, model } = require("mongoose") ;
 const express = require("express");
-const routes = require("./routes");
+const routesArticles = require("./routes-articles");
+const routesUsers = require("./routes-users");
 require("dotenv").config();
 // par défaut NODE_ENV est undefined => URI redirige vers l'URI de développement
 // set NODE_ENV=production
@@ -13,7 +14,8 @@ connect(URI)
 const PORT = 4003;
 const app = express();
 app.use(express.json()); // middleware
-app.use(routes);
+app.use(routesArticles);
+app.use("/user", routesUsers); // préfixe de route
 
 console.log("L'application vient de commencer !") ;
 

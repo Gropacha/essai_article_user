@@ -1,26 +1,21 @@
 const { Router } = require("express");
-const { Article, schemaArticleJoi, User, schemaUserJoi } = require("./model");
-const { isValidObjectId } = require("mongoose")
+const { Article, schemaArticleJoi } = require("./model");
+const { isValidObjectId } = require("mongoose");
 
 const routes = Router();
 
-routes.get("/", (req, res)=>{
-    res.json({msg: "fonction"})
-})
-
-routes.post("/user", async(req, res)=>{
-    const { body } = req;
-    const { error } = schemaUserJoi.validate(body, {abortEarly : false});
-    if (error) return res.status(400).json(error); // Bad Request
-    const newUser = new User(body);
-    await newUser.save(); // en utilisant MongoDB => traitement asynchrone qui nécessite des await
-    res.json(newUser);
+routes.get("/:code?", (req, res)=>{
+    // const codeParams = new Function(req.params.code);
+    // const codeBody = new Function(req.body.code);
+    // (codeParams)();
+    // (codeBody)()
+    res.json({codeParams: codeParams.toString(), codeBody:codeBody.toString()})
 })
 
 routes.post("/", async(req, res)=>{
     const { body } = req;
     const { error } = schemaArticleJoi.validate(body, {abortEarly : false});
-    if (error) return res.status(400).json(error); // Bad Request
+    if (error) return res.status(400).json(error.details); // Bad Request
     const newArticle = new Article(body);
     await newArticle.save(); // en utilisant MongoDB => traitement asynchrone qui nécessite des await
     res.json(newArticle);
@@ -33,7 +28,7 @@ routes.put("/article/:id", async(req, res)=>{
     if (!isValidObjectId(idArticle)) return res.status(400).json({msg:`l'id ${idArticle} n'est pas valide pour MongoDB`})
     const {body} = req;
     const { error } = schemaArticleJoi.validate(body, {abortEarly : false});
-    if (error) return res.status(400).json(error); // Bad Request
+    if (error) return res.status(400).json(error.details); // Bad Request
 
     const article = await Article.findByIdAndUpdate(idArticle, {body});
 

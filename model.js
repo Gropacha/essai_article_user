@@ -15,7 +15,7 @@ const articleSchema = new Schema ({
     auteur : String
 })
 
-const Article = model("Article", articleSchema);
+const Article = model("articles", articleSchema);
 
 module.exports.Article = Article;
 module.exports.schemaArticleJoi = schemaArticleJoi;
@@ -26,12 +26,12 @@ const userSchema = new Schema({
 });
 
 const schemaUserJoi = Joi.object({
-    email : Joi.string().email({tlds:false}).required(),
-    password: Joi.string().regex().required()
+    email : Joi.string().email({ tlds: { allow: false } }).required(),
+    password: Joi.string().regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/).required() // réviser les regex !!!
 });
 
-const User = model("User", userSchema)
+const User = model("users", userSchema)
 
-module.exports.User = User;
+module.exports.User = User; // export simple
 module.exports.schemaUserJoi = schemaUserJoi;
 
