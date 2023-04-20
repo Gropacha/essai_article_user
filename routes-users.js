@@ -41,15 +41,16 @@ routes.post("/", async(req, res)=>{
 
 routes.delete("/:userId", async(req, res)=>{
     const userId = req.params.userId;
+    if (!isValidObjectId(userId)) return res.status(400).json({msg:`l'id ${userId} n'est pas valide pour MongoDB`});
     const userRecherche = await User.findByIdAndRemove(userId);
-    if (!userRecherche) return res.status(404).json({msg:`l'utilisateur _id=${userId} n'existe pas`});
-    return res.json({msg:" l'utilisateur a bien été supprimé", userSupprime:userRecherche});
+    if (!userRecherche) return res.status(404).json({msg:`L'utilisateur _id=${userId} n'existe pas`});
+    return res.json({msg:"L'utilisateur a bien été supprimé", userSupprime:userRecherche});
 });
 
 routes.get("/all", async(req, res)=>{
-    const allUsers = await User.find();
-    const allUsersFiltre = allUsers.map(user=>{return {email:user.email, _id: user._id}});
-    return res.json(allUsersFiltre);
+    const allUsers = await User.find({}).select({ _id:1, email:1});
+    // const allUsersFiltre = allUsers.map(user=>{return {email:user.email, _id: user._id}});
+    return res.json(allUsers);
 })
 
 
