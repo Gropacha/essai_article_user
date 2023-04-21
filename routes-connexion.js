@@ -21,7 +21,8 @@ route.post("/", async (req, res)=>{
     // pour renvoyer un jsonwebtoken nous allons utliser un module jsonwebtoken (à installer au préalable : npm i jsonwebtoken)
     const userWithoutPassword = {
         _id : UserRecherche._id,
-        email : UserRecherche.email
+        email : UserRecherche.email,
+        role : UserRecherche.role ? UserRecherche.role : "redacteur"
     };
 
     const token = sign(userWithoutPassword, process.env.JWT_SECRET);
@@ -32,3 +33,8 @@ route.post("/", async (req, res)=>{
 });
 
 module.exports = route;
+
+//https://fr.wikipedia.org/wiki/Access_Control_List
+
+// rôle => donne accès à des droits
+

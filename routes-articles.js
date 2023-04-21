@@ -1,13 +1,15 @@
 const { Router } = require("express");
 const { Article, schemaArticleJoi } = require("./model");
-const { isValideIdArticle, isValideArticle, autorisation } = require("./middleware");
+const { isValideIdArticle, isValideArticle, autorisation, isAdmin } = require("./middleware");
 
 const routes = Router();
 
 
 
-routes.post("/", isValideArticle, async(req, res)=>{   
-    const newArticle = new Article(req.body);
+routes.post("/", autorisation, isValideArticle, async(req, res)=>{   
+    const userId = req.user._id;
+    console.log(userId);
+    const newArticle = new Article({...req.body, auteur:userId});
     await newArticle.save(); // en utilisant MongoDB => traitement asynchrone qui nécessite des await
     res.json(newArticle);
 });
@@ -20,7 +22,7 @@ routes.put("/article/:id", autorisation, isValideIdArticle, isValideArticle, asy
     return res.json({articleModifie : article});
 });
 
-routes.delete("/article/:id", autorisation, isValideIdArticle, async(req, res)=>{
+routes.delete("/article/:id", autorisation, isAdmin, isValideIdArticle, async(req, res)=>{
     const reponseMongoDB = await Article.findByIdAndRemove(req.params.id);
     return res.json(reponseMongoDB?{msg:"suppression de la BDD", articleSupprimee:reponseMongoDB}:{msg:`l'article ${req.params.id} n'existe pas`})
 });
@@ -33,10 +35,15 @@ routes.get("/article/:id", isValideIdArticle, async(req, res)=>{
 
 //GET http://localhost:4033/article/all
 routes.get("/articles/all" , async(req, res)=> {
-    const articles = await Article.find();
+    const articles = await Article.find().populate("auteur", "email -_id role");
     return res.json(articles);
 });
 
+routes.get("/articles-of-user/:userId" , async(req, res)=> {
+    const userId = req.params.userId;
+    const tousLesArticles = await Article.find({auteur : userId}).populate("auteur", "email -_id role");
+    return res.json(tousLesArticles);
+});
 // attention à l'ordre des middlewares qui a son importance
 // https://www.youtube.com/watch?v=22d4_KIqBNc
 // https://grafikart.fr/tutoriels/conteneur-dependance-922

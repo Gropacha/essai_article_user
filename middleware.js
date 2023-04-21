@@ -21,20 +21,26 @@ const autorisation = (req, res, next) => {
    if (!token) return res.status(401).json({msg : "vous devez avoir un token pour réaliser cette opération"});
    // si elle est absente => erreur 401 // Unauthorized
    try {
-       verify(token, process.env.JWT_SECRET);
-       next();
+        const payload = verify(token, process.env.JWT_SECRET);
+        req.user = payload;
+        // console.log(verif);
+        next();
    } catch (ex) {
         res.status(400).json({msg : "JWT invalid"})
    }
    // si elle est présente, mais qui a un problème dans la signature (3ème partie) 400
 }
 
-
+function isAdmin(req, res, next){
+    if (req.user.role !=="admin") return res.status(403).json({msg:"Vous n'avez pas les droits pour effectuer cette action !"})
+    next();
+}
 
 
 module.exports.isValideIdArticle = isValideIdArticle;
 module.exports.isValideArticle = isValideArticle;
 module.exports.autorisation = autorisation;
+module.exports.isAdmin = isAdmin;
 // une fonction middleware prend TOUJOURS 3 paramètres
 // req : intercepter la requête
 // res : retourne une réponse si le traitement est faux

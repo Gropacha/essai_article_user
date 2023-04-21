@@ -2,7 +2,7 @@ const { Router } = require("express");
 const { User, schemaUserJoi } = require("./model");
 const { isValidObjectId } = require("mongoose");
 const { genSalt, hash} = require("bcrypt");
-const { autorisation } = require("./middleware");
+const { autorisation, isAdmin } = require("./middleware");
 // genSalt => indique la difficulté à déhasher un mot de passe
 // hash => "mot de passe"=> "lshqfdshms65fsdd5fsdd5fsdsdhjkgsd"
 
@@ -35,12 +35,13 @@ routes.post("/", async(req, res)=>{
     const passwordHashe = await hash(body.password, salt);
     // return res.json(passwordHashe);
     ///////////////////////////////////
-    const newUser = new User({email:body.email, password:passwordHashe});
+    // const newUser = new User({email:body.email, password:passwordHashe, role:body.role});
+    const newUser = new User({...body, password : passwordHashe});
     await newUser.save(); // en utilisant MongoDB => traitement asynchrone qui nécessite des await
     return res.json(newUser);
 });
 
-routes.delete("/:userId", autorisation, async(req, res)=>{
+routes.delete("/:userId", autorisation, isAdmin, async(req, res)=>{
     const userId = req.params.userId;
     if (!isValidObjectId(userId)) return res.status(400).json({msg:`l'id ${userId} n'est pas valide pour MongoDB`});
     const userRecherche = await User.findByIdAndRemove(userId);
@@ -49,7 +50,7 @@ routes.delete("/:userId", autorisation, async(req, res)=>{
 });
 
 routes.get("/all", async(req, res)=>{
-    const allUsers = await User.find({}).select({ _id:1, email:1});
+    const allUsers = await User.find({}).select({ _id:1, email:1, role:1});
     // const allUsersFiltre = allUsers.map(user=>{return {email:user.email, _id: user._id}});
     return res.json(allUsers);
 })
