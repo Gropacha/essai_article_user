@@ -2,6 +2,7 @@ const { Router } = require("express");
 const { User, schemaUserJoi } = require("./model");
 const { isValidObjectId } = require("mongoose");
 const { genSalt, hash} = require("bcrypt");
+const { autorisation } = require("./middleware");
 // genSalt => indique la difficulté à déhasher un mot de passe
 // hash => "mot de passe"=> "lshqfdshms65fsdd5fsdd5fsdsdhjkgsd"
 
@@ -39,7 +40,7 @@ routes.post("/", async(req, res)=>{
     return res.json(newUser);
 });
 
-routes.delete("/:userId", async(req, res)=>{
+routes.delete("/:userId", autorisation, async(req, res)=>{
     const userId = req.params.userId;
     if (!isValidObjectId(userId)) return res.status(400).json({msg:`l'id ${userId} n'est pas valide pour MongoDB`});
     const userRecherche = await User.findByIdAndRemove(userId);

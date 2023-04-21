@@ -2,7 +2,7 @@ const { connect, Schema, model } = require("mongoose") ;
 const express = require("express");
 const routesArticles = require("./routes-articles");
 const routesUsers = require("./routes-users");
-const routeLogin = requre("./routes-connexion");
+const routeLogin = require("./routes-connexion");
 require("dotenv").config();
 // par défaut NODE_ENV est undefined => URI redirige vers l'URI de développement
 // set NODE_ENV=production

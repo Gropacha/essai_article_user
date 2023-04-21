@@ -24,7 +24,7 @@ route.post("/", async (req, res)=>{
         email : UserRecherche.email
     };
 
-    const token = sign(userWithoutPassword, "clef secrete");
+    const token = sign(userWithoutPassword, process.env.JWT_SECRET);
     res.json({ msg: "Bienvenu", token : token }); // authentification => qui est l'utilistateur?
                                                 // autorisation associé à l'utilisateur authentifié
 

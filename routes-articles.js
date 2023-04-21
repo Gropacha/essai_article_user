@@ -1,54 +1,45 @@
 const { Router } = require("express");
 const { Article, schemaArticleJoi } = require("./model");
-const { isValidObjectId } = require("mongoose");
+const { isValideIdArticle, isValideArticle, autorisation } = require("./middleware");
 
 const routes = Router();
 
 
 
-routes.post("/", async(req, res)=>{
-    const { body } = req;
-    const { error } = schemaArticleJoi.validate(body, {abortEarly : false});
-    if (error) return res.status(400).json(error.details); // Bad Request
-    const newArticle = new Article(body);
+routes.post("/", isValideArticle, async(req, res)=>{   
+    const newArticle = new Article(req.body);
     await newArticle.save(); // en utilisant MongoDB => traitement asynchrone qui nécessite des await
     res.json(newArticle);
 });
 
 // put => update sur TOUS les champs de l'article
 // patch => update partiel
-routes.put("/article/:id", async(req, res)=>{
-    const idArticle = req.params.id;
-    if (!isValidObjectId(idArticle)) return res.status(400).json({msg:`l'id ${idArticle} n'est pas valide pour MongoDB`})
-    const {body} = req;
-    const { error } = schemaArticleJoi.validate(body, {abortEarly : false});
-    if (error) return res.status(400).json(error.details); // Bad Request
-
-    const article = await Article.findByIdAndUpdate(idArticle, {body});
-
-    return res.json(article?article:{msg:`l'article ${idArticle} n'existe pas`});
+routes.put("/article/:id", autorisation, isValideIdArticle, isValideArticle, async(req, res)=>{
+    const article = await Article.findByIdAndUpdate(req.params.id, req.body);
+    if (!article) return res.status(404).json({erreur: `L'article à l'id ${req.params.id} n'existe pas !`})
+    return res.json({articleModifie : article});
 });
 
-routes.delete("/article/:id", async(req, res)=>{
-    const idArticle = req.params.id;
-    if (!isValidObjectId(idArticle)) return res.status(400).json({msg:`l'id ${idArticle} n'est pas valide pour MongoDB`})
-    const reponseMongoDB = await Article.findByIdAndRemove(idArticle);
-    return res.json(reponseMongoDB?{msg:"suppression de la BDD", articleSupprimee:reponseMongoDB}:{msg:`l'article ${idArticle} n'existe pas`})
+routes.delete("/article/:id", autorisation, isValideIdArticle, async(req, res)=>{
+    const reponseMongoDB = await Article.findByIdAndRemove(req.params.id);
+    return res.json(reponseMongoDB?{msg:"suppression de la BDD", articleSupprimee:reponseMongoDB}:{msg:`l'article ${req.params.id} n'existe pas`})
 });
 
-routes.get("/article/:id", async(req, res)=>{
+routes.get("/article/:id", isValideIdArticle, async(req, res)=>{
     const idArticle = req.params.id;
-    if (!isValidObjectId(idArticle)) return res.status(400).json({msg:`l'id ${idArticle} n'est pas valide pour MongoDB`})
     const article = await Article.findById(idArticle);
     return res.json(article?article:{msg:`l'article ${idArticle} n'existe pas`});
 });
 
 //GET http://localhost:4033/article/all
-routes.get("/articles/all", async(req, res)=> {
+routes.get("/articles/all" , async(req, res)=> {
     const articles = await Article.find();
     return res.json(articles);
 });
 
+// attention à l'ordre des middlewares qui a son importance
+// https://www.youtube.com/watch?v=22d4_KIqBNc
+// https://grafikart.fr/tutoriels/conteneur-dependance-922
 
 
 
